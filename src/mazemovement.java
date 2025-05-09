@@ -30,15 +30,15 @@ public class mazemovement {
 
     //This is a SECOND constructor that takes 3 parameters.  This allows us to specify the hero's name and position when we build it.
     // if you put in a String, an int and an int the program will use this constructor instead of the one above.
-    public mazemovement(int pXpos, int pYpos, int pwidth, int pheight) {
+    public mazemovement(int pXpos, int pYpos, int pwidth, int pheight, int pdx, int pdy) {
         xpos = pXpos;
         ypos = pYpos;
-        dx =0;
-        dy =0;
+        dx =pdx;
+        dy =pdy;
         width = pwidth;
-        height = pheight;
+        height = pheight; // allows custamixation for each wall or saw
         isAlive = true;
-        rec = new Rectangle(xpos,ypos, width, height);
+        rec = new Rectangle(pXpos,pYpos, pwidth, pheight);
         up = false;
         down = false;
         left = false;
@@ -77,7 +77,7 @@ public class mazemovement {
         if( up == true){
             dy = -10;
         }
-        if ( down == true){
+        if ( down == true){ // code for movement we did in class
             dy = 10;
         }
         if( left == true){

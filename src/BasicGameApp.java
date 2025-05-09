@@ -46,6 +46,8 @@ public class BasicGameApp implements Runnable, KeyListener {
 	public Image wallpic;
 	public Image finishpic;
 	public Image backgroundpic;
+	public Image gameoverpic;
+	public Image victorypic;
 
    //Declare the objects used in the program
    //These are things that are made up of more than one variable type
@@ -53,10 +55,12 @@ public class BasicGameApp implements Runnable, KeyListener {
 	private mazemovement wheelsaw;
 	private mazemovement wall;
 	private mazemovement finish;
+	private mazemovement gameover;
+	private mazemovement victory;
 
 	// step 1: add astro array and say how big it is
-	mazemovement [] wheelsawarray = new mazemovement[10];
-	mazemovement [] wallarray = new mazemovement[10];
+	mazemovement [] wheelsawarray = new mazemovement[4];
+	mazemovement [] wallarray = new mazemovement[9];
 
    // Main method definition
    // This is the code that runs first and automatically
@@ -76,21 +80,69 @@ public class BasicGameApp implements Runnable, KeyListener {
       setUpGraphics();
        
       //variable and objects
-      //create (construct) the objects needed for the game and load up 
+      //create (construct) the objects needed for the game and load up
+		// creating all of the charecters and setting their movements
 		guyPic = Toolkit.getDefaultToolkit().getImage("guy.png");
 		wheelsawpic = Toolkit.getDefaultToolkit().getImage("wheelsaw.png");
 		backgroundpic = Toolkit.getDefaultToolkit().getImage("Unknown.jpeg");
 		wallpic = Toolkit.getDefaultToolkit().getImage("wall.jpeg");
 		finishpic = Toolkit.getDefaultToolkit().getImage("finish.png");
-		guy = new mazemovement(20,600,60,60);
-		finish = new mazemovement(900,50,60,60);
-		//step 2: fill astro array
-		for(int x = 0;x<wallarray.length; x++){
-			wallarray[x] = new mazemovement((int)(Math.random()*900),(int)(Math.random()*700),60,60);
+		gameoverpic = Toolkit.getDefaultToolkit().getImage("Unknown.png");
+		victorypic = Toolkit.getDefaultToolkit().getImage("victory.jpeg");
+		guy = new mazemovement(20,580,60,40,0,0);
+		finish = new mazemovement(900,50,60,60,0,0);
+
+		gameover = new mazemovement(100000,100000, 1000,700,0,0);
+		victory = new mazemovement(100000,100000,1000,700,0,0);
+		// setting each individual wall to the right position
+		for (int x = 0; wallarray.length >x; x++){
+			wallarray[x] = new mazemovement(0,0,0,60,0,0);
 		}
+		wallarray[0].xpos = 0;// the preceding lines of code that seem similiar are setting each wall to its individual postion and ensuring the rec followed
+		wallarray[0].ypos = 0;
+		wallarray[0].width = 1000;
+		wallarray[0].rec = new Rectangle(wallarray[0].xpos, wallarray[0].ypos, wallarray[0].width, wallarray[0].height);
+		wallarray[1].xpos = 0;
+		wallarray[1].ypos = 140;
+		wallarray[1].width = 150;
+		wallarray[1].rec = new Rectangle(wallarray[1].xpos, wallarray[1].ypos, wallarray[1].width, wallarray[1].height);
+		wallarray[2].ypos=140;
+		wallarray[2].width=700;
+		wallarray[2].xpos = 350;
+		wallarray[2].rec = new Rectangle(wallarray[2].xpos, wallarray[2].ypos, wallarray[2].width, wallarray[2].height);
+		wallarray[3].ypos=300;
+		wallarray[3].width=550;
+		wallarray[3].xpos = 500;
+		wallarray[3].rec = new Rectangle(wallarray[3].xpos, wallarray[3].ypos, wallarray[3].width, wallarray[3].height);
+		wallarray[4].ypos = 300;
+		wallarray[4].width=300;
+		wallarray[4].xpos = 0;
+		wallarray[4].rec = new Rectangle(wallarray[4].xpos, wallarray[4].ypos, wallarray[4].width, wallarray[4].height);
+		wallarray[5].ypos=500;
+		wallarray[5].width=200;
+		wallarray[5].xpos = 800;
+		wallarray[5].rec = new Rectangle(wallarray[5].xpos, wallarray[5].ypos, wallarray[5].width, wallarray[5].height);
+		wallarray[6].ypos=500;
+		wallarray[6].width=600;
+		wallarray[6].xpos = 0;
+		wallarray[6].rec = new Rectangle(wallarray[6].xpos, wallarray[6].ypos, wallarray[6].width, wallarray[6].height);
+		wallarray[7].ypos=650;
+		wallarray[7].width=1000;
+		wallarray[7].xpos = 1;
+		wallarray[7].height = 30; //different hieght so it doesn't instantly kill the player
+		wallarray[7].rec = new Rectangle(wallarray[7].xpos, wallarray[7].ypos, wallarray[7].width, wallarray[7].height);
+		wallarray[8].ypos=80;
+		wallarray[8].width=70;
+		wallarray[8].xpos = 0;
+		wallarray[8].rec = new Rectangle(wallarray[8].xpos, wallarray[8].ypos, wallarray[8].width, wallarray[8].height);
 		for(int x = 0;x<wheelsawarray.length; x++){
-			wheelsawarray[x] = new mazemovement((int)(Math.random()*900),(int)(Math.random()*700),60,60);
+			int yps = x*200;
+			int xps = x*100; // setting the wheelsaws the be seperate
+			wheelsawarray[x] = new mazemovement(xps,yps,60,60,3,0);
+			wheelsawarray[x].rec = new Rectangle(wheelsawarray[x].xpos, wheelsawarray[x].ypos, wheelsawarray[x].width, wallarray[8].height);
+
 		}
+		wheelsawarray[0].ypos = 80; // to fix the first wheel so it isn't stuck in a wall
 
 
 
@@ -120,39 +172,62 @@ public class BasicGameApp implements Runnable, KeyListener {
 	{
       //calls the move( ) code in the objects
 		collision();
-		guy.wrap();
+		guy.wrap(); // the movement for the guy. he can't cheat beacuse of the walls i've set
 		for(int y = 0; y<wheelsawarray.length ; y++){
-			wheelsawarray[y].bounce();
+			wheelsawarray[y].bounce(); // here is the movement for the wheelsaw
 		}
 
 	}
 
 	public void collision(){
 		for (int x = 0;x<wheelsawarray.length; x++){
-
+// collisions from guy to wheelsaws
 
 		if(guy.rec.intersects(wheelsawarray[x].rec) && guy.crash == false && wheelsawarray[x].isAlive == true && guy.isAlive == true){
 			System.out.println("splat");
 			guy.isAlive = false;
-			guy.dx=-guy.dx;
-			guy.dy = -guy.dy;
-			wheelsawarray[x].dx=-wheelsawarray[x].dx;
-			wheelsawarray[x].dy = -wheelsawarray[x].dy;
-			guy.dx=guy.dx*2;
-			guy.dy=guy.dy*2;
-			wheelsawarray[x].width=wheelsawarray[x].width+10;
-			wheelsawarray[x].height=wheelsawarray[x].height+1;
+			gameover.xpos = 0;
+			gameover.ypos = 0; // center end screen
+			guy.xpos = 20; // return guy to start position so it doesn't continue crashing with what it hit
+			guy.ypos = 580;
+			for(int y =0; y <wheelsawarray.length;y++){
+				wheelsawarray[y].dx = 0; // ensuring not movement after collision
+				wheelsawarray[y].dy = 0;
+			}
 			guy.crash = true;
 		}
 		if(!guy.rec.intersects(wheelsawarray[x].rec)){
 			guy.crash = false;
 		}}
-		for(int x = 0; x<wheelsawarray.length;x++){
-			if(guy.rec.intersects(wheelsawarray[x].rec)){
-				System.out.println("crashing");
+		for (int x = 0;x<wallarray.length; x++){
 
+// same thing as the wheelsaws but this instead is for the walls.
+			if(guy.rec.intersects(wallarray[x].rec) && guy.crash == false && wallarray[x].isAlive == true && guy.isAlive == true){
+				System.out.println("splat");
+				guy.isAlive = false;
+				gameover.xpos = 0;
+				gameover.ypos = 0;
+				guy.xpos = 20;
+				guy.ypos = 580;
+				guy.crash = true;
 			}
-		}
+			if(!guy.rec.intersects(wallarray[x].rec)){
+				guy.crash = false;
+			}}
+
+
+// same thing as the wheelsaws but this instead is for the walls.
+			if(guy.rec.intersects(finish.rec) && guy.crash == false && finish.isAlive == true && guy.isAlive == true){
+				System.out.println("splat");
+				guy.isAlive = false;
+				victory.xpos = 0;
+				victory.ypos = 0; // sets win screen center
+				guy.crash = true;
+			}
+			if(!guy.rec.intersects(finish.rec)){
+				guy.crash = false;
+			}
+
 	}
 
 	
@@ -202,17 +277,21 @@ public class BasicGameApp implements Runnable, KeyListener {
 		g.clearRect(0, 0, WIDTH, HEIGHT);
 		g.drawImage(backgroundpic,0,0, WIDTH, HEIGHT, null);
 		g.drawImage(guyPic, guy.xpos, guy.ypos, guy.width, guy.height, null);
-		g.drawImage(wallpic, wall.xpos, wall.ypos, wall.width, wall.height, null);
+		for(int x =0;x<wallarray.length;x++){
+			g.drawImage(wallpic, wallarray[x].xpos, wallarray[x].ypos, wallarray[x].width, wallarray[x].height, null);
+		}
 		g.drawImage(finishpic, finish.xpos, finish.ypos, finish.width, finish.height, null);
-		if(guy.isAlive == true && wheelsaw.isAlive == true) {
-			g.drawImage(wheelsawpic, wheelsaw.xpos, wheelsaw.ypos, wheelsaw.width, wheelsaw.height, null);
+		for(int z=0; z<wheelsawarray.length;z++){ // drawing each wheelsaw
+		if(guy.isAlive == true && wheelsawarray[z].isAlive == true) {
+			g.drawImage(wheelsawpic, wheelsawarray[z].xpos, wheelsawarray[z].ypos, wheelsawarray[z].width, wheelsawarray[z].height, null);
 		}
-		for(int z=0; z<wheelsawarray.length;z++){
-			g.drawImage(wheelsawpic, wheelsawarray[z].xpos, wheelsawarray[z].ypos, wheelsaw.width, wheelsaw.height, null);
+			g.drawImage(wheelsawpic, wheelsawarray[z].xpos, wheelsawarray[z].ypos, wheelsawarray[z].width, wheelsawarray[z].height, null);
 		}
-		for(int z=0; z<wallarray.length;z++){
-			g.drawImage(wallpic, wallarray[z].xpos, wallarray[z].ypos, wall.width, wall.height, null);
+		for(int z=0; z<wallarray.length;z++){ // drawing each wall
+			g.drawImage(wallpic, wallarray[z].xpos, wallarray[z].ypos, wallarray[z].width, wallarray[z].height, null);
 		}
+		g.drawImage(gameoverpic,gameover.xpos,gameover.ypos,gameover.width,gameover.height,null);
+		g.drawImage(victorypic,victory.xpos,victory.ypos,victory.width,victory.height,null);
 		g.dispose();
 		bufferStrategy.show();
 	}
